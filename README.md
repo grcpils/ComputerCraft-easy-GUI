@@ -2,7 +2,7 @@
 
 Download the api file with this command:
 ```
-wget gui_api.lua https://raw.githubusercontent.com/grcpils/cc-gui_api/master/gui_api.lua
+wget https://raw.githubusercontent.com/grcpils/cc-gui_api/master/gui_api.lua
 ```
 
 After that, create new file for your project:
