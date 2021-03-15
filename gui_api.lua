@@ -7,21 +7,49 @@
 
 table = require 'table'
 
-function newGUI (monitorSide)
-    local self = { monitor = peripheral.wrap(monitorSide), buttons = {}, charts = {}, groups = {} }
+    local printInfo = function(s,...)
+        term.setTextColor(colors.white)
+        return io.write(s:format(...))
+    end
+
+    local printErr = function(s,...)
+        term.setTextColor(colors.red)
+        return io.write(s:format(...))
+    end
+
+    local printWarn = function(s,...)
+        term.setTextColor(colors.orange)
+        return io.write(s:format(...))
+    end
+
+function newGUI (opt)
+    local self = { monitor = peripheral.wrap(opt.monitorSide), buttons = {}, charts = {}, groups = {} }
 
     local Position = { x = 0, y = 0 }
     local Size = { h = 0, w = 0 }
     local Colors = { idle, active }
+    self.monitor.setTextScale(1)
+
+    if opt.uiSize ~= nil then
+        if opt.uiSize == "small" then
+            self.monitor.setTextScale(0.5)
+        elseif opt.uiSize == "normal" then
+            self.monitor.setTextScale(1)
+        elseif opt.uiSize == "big" then
+            self.monitor.setTextScale(1.5)
+        else
+            printWarn("[GUI] Warning: uiSize '%s' not found (default=normal)\n", opt.uiSize)
+            self.monitor.setTextScale(1)
+        end
+    else
+        printWarn("[GUI] Warning: no uiSize set (default=normal)\n", nil)
+        self.monitor.setTextScale(1)
+    end
+
 
     --
     -- PRIVATE
     --
-
-    -- printf function like C
-    local printf = function(s,...)
-        return io.write(s:format(...))
-    end
 
     -- draw a simple Shape with Xmin, Xmax, Ymin, Ymax values
     local drawShape = function (shape)
@@ -33,23 +61,63 @@ function newGUI (monitorSide)
         end
     end
 
-    -- draw outline of Shape with Xmin, Xmax, Ymin, Ymax values
-    local drawShapeOut = function (shape)
-        for cY = shape.Ymin, shape.Ymax do
-            for cX = shape.Xmin, shape.Xmax do
-                self.monitor.setCursorPos(cX, cY)
-                if cY == Ymin or cY == Ymax then
-                    self.monitor.write(" ")
-                elseif cX == Xmin or cX == Xmax then
+    -- draw a simple Shape with Xmin, Xmax, Ymin, Ymax values
+    local drawCustomShape = function (xmin, xmax, ymin, ymax, progress)
+        for cY = ymin, ymax do
+            for cX = xmin, progress do
+                if cX <= xmax and cY <= ymax then
+                    self.monitor.setCursorPos(cX, cY)
                     self.monitor.write(" ")
                 end
             end
         end
     end
 
+    -- draw outline of Shape with Xmin, Xmax, Ymin, Ymax values
+    local drawShapeOut = function (shape)
+        for cY = shape.Ymin, shape.Ymax do
+            for cX = shape.Xmin, shape.Xmax do
+                self.monitor.setCursorPos(cX, cY)
+                if cY == shape.Ymin or cY == shape.Ymax then
+                    self.monitor.write(" ")
+                elseif cX == shape.Xmin or cX == shape.Xmax then
+                    self.monitor.write(" ")
+                end
+            end
+        end
+    end
+
+    local fillProgress = function (prg)
+        self.monitor.setBackgroundColor(prg.Color)
+        if prg.Type == "horizontal" then
+            local percentStep = prg.Xmax / 100
+            local percent = (prg.Value / prg.ValueMax) * 100
+            local progress = percentStep * percent
+            drawCustomShape(prg.Xmin, prg.Xmax, prg.Ymin, prg.Ymax, progress)
+        elseif prg.Type == "vertical" then
+        else
+            printErr("[GUI] Error: %s type unknown (%s)\n", prg.label, prg.Type)
+        end
+        self.monitor.setBackgroundColor(colors.black)
+    end
+
+    local drawProgress = function (prg)
+        self.monitor.setBackgroundColor(colors.gray)
+        drawShape(prg)
+        self.monitor.setBackgroundColor(colors.black)
+    end
+
+    local drawAllProgress = function ()
+        table.foreach(self.charts, function (key, prg)
+            printErr("[GUI] WIP: Draw %s progress '%s'\n", prg.Type, prg.label)
+            drawProgress(prg)
+            fillProgress(prg)
+        end)
+    end
+
     -- draw group label
     local drawGroupLabel = function (grp)
-        local Y = Ymin
+        local Y = grp.Ymin
         local X = math.floor((grp.Xmax + grp.Xmin - string.len(grp.label)) / 2)
         self.monitor.setBackgroundColor(colors.black)
         self.monitor.setCursorPos(X, Y)
@@ -66,7 +134,7 @@ function newGUI (monitorSide)
     -- foreach in groups table for draw all group
     local drawAllGroups = function ()
         table.foreach(self.groups, function (key, grp)
-            printf("[GUI] Draw group '%s' with ID: %s\n", grp.label, key)
+            printInfo("[GUI] Draw group '%s'\n", grp.label)
             drawGroup(grp)
             drawGroupLabel(grp)
         end)
@@ -93,7 +161,7 @@ function newGUI (monitorSide)
     -- foreach in buttons table for draw all button
     local drawAllButtons = function ()
         table.foreach(self.buttons, function (key, btn)
-            printf("[GUI] Draw button '%s' with ID: %s\n", btn.label, key)
+            printInfo("[GUI] Draw button '%s'\n", btn.label)
             drawButton(btn, "idle")
         end)
     end
@@ -128,26 +196,68 @@ function newGUI (monitorSide)
 
     -- get Xmin, Xmax, Ymin, Ymax with Position and Size
     local getCoordonate = function (Position, Size)
-        Ymin = math.floor(Position[1])
-        Xmin = math.floor(Position[2])
-        Ymax = math.floor((Position[1] + Size[1]))
-        Xmax = math.floor((Position[2] + Size[2]))
-        return Xmin, Xmax, Ymin, Ymax
+        if opt.uiSize == "small" then x=2 elseif opt.uiSize == "big" then x=3 else x=1 end
+        local ymin = math.floor(Position[1]) * x
+        local xmin = math.floor(Position[2]) * x
+        local ymax = math.floor((Position[1] + Size[1])) * x
+        local xmax = math.floor((Position[2] + Size[2])) * x
+        return xmin, xmax, ymin, ymax
     end
 
     --
     -- PUBLIC
     --
 
+    local updateProgress = function (Opt)
+        table.foreach(self.charts, function (key, prg)
+            if prg.label == Opt.label then
+                prg.Value = Opt.Value
+                drawProgress(prg)
+                fillProgress(prg)
+                return
+            end
+            printErr("[GUI] Error: progress '%s' not found\n", Opt.label)
+        end)
+    end
+
+    local getProgressValue = function (Opt)
+        local value
+        table.foreach(self.charts, function (key, prg)
+            if prg.label == Opt.label then
+                value = prg.Value
+                return
+            end
+            printErr("[GUI] Error: progress '%s' not found\n", Opt.label)
+        end)
+        return value
+    end
+
+    local newProgress = function (Opt)
+        local xmin, xmax, ymin, ymax = getCoordonate(Opt.Position, Opt.Size)
+        local Progress = {
+            Type = Opt.Type,
+            label = Opt.label,
+            Xmin = xmin,
+            Xmax = xmax,
+            Ymin = ymin,
+            Ymax = ymax,
+            ValueMax = Opt.Max,
+            Value = Opt.Value,
+            Color = Opt.Color
+        }
+        table.insert(self.charts, Progress)
+        return
+    end
+
     -- create new group
     local newGroup = function (Opt)
-        Xmin, Xmax, Ymin, Ymax = getCoordonate(Opt.Position, Opt.Size)
+        local xmin, xmax, ymin, ymax = getCoordonate(Opt.Position, Opt.Size)
         local group = {
             label = Opt.label,
-            Xmin = Xmin,
-            Xmax = Xmax,
-            Ymin = Ymin,
-            Ymax = Ymax,
+            Xmin = xmin,
+            Xmax = xmax,
+            Ymin = ymin,
+            Ymax = ymax,
             Color = Opt.Color
         }
         table.insert(self.groups, group)
@@ -157,33 +267,27 @@ function newGUI (monitorSide)
     -- create new button
     local newButton = function (Opt)
         local colors = {}
-        Xmin, Xmax, Ymin, Ymax = getCoordonate(Opt.Position, Opt.Size)
+        local xmin, xmax, ymin, ymax = getCoordonate(Opt.Position, Opt.Size)
         colors["idle"] = Opt.Colors[1]
         colors["active"] = Opt.Colors[2]
         local button = {
             label = Opt.label,
             callback = Opt.callback,
-            Ymin = Ymin,
-            Xmin = Xmin,
-            Ymax = Ymax,
-            Xmax = Xmax,
+            Xmin = xmin,
+            Xmax = xmax,
+            Ymin = ymin,
+            Ymax = ymax,
             Colors = colors
         }
         table.insert(self.buttons, button)
         return
     end
 
-    -- print all logged buttons in terminal
-    local logAllButtons = function ()
-        table.foreach(self.buttons, function (key, value)
-            printf("[GUI] button '%s' ID: %s\n", key, value.label)
-        end)
-    end
-
     -- init GUI (Draw all logged elements and start events loop)
     local init = function ()
         self.monitor.clear()
         drawAllGroups()
+        drawAllProgress()
         drawAllButtons()
         waitForEvents()
     end
@@ -191,7 +295,9 @@ function newGUI (monitorSide)
     return {
         newButton = newButton,
         newGroup = newGroup,
-        logAllButtons = logAllButtons,
+        newProgress = newProgress,
+        updateProgress = updateProgress,
+        getProgressValue = getProgressValue,
         init = init
     }
 end
