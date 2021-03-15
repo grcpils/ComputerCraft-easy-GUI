@@ -27,7 +27,9 @@ GUI = require('gui_api)
 
 Create new GUI:
 ```lua
-gui = GUI.newGUI("position_of_your_monitor") -- Top, Bottom, Left, Right
+-- monitorSize = [Top, Bottom, Left, Right]
+-- uiSize is Optional = [small, normal, big] (default=normal)
+gui = GUI.newGUI{monitorSize="position_of_your_monitor", uiSize="normal"} 
 ```
 
 Init the GUI with this line:
@@ -71,7 +73,8 @@ gui.newGroup{label="Group_A", Position={1,1}, Size={10,14}, Color=colors.gray}
 GUI = require('gui_api')
 
 -- create gui tools
-gui = GUI.newGUI("right")
+-- Without a uiSize argument a Warning message appear in terminal
+gui = GUI.newGUI{monitorSide="right"}
 
 -- callback functions declaration
 function sayHello () print("Hello") end
