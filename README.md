@@ -91,3 +91,11 @@ gui.init()
 ## Screenshot
 
 ![gui_api](https://raw.githubusercontent.com/grcpils/cc-gui_api/master/.github/screenshots/gui_api.png)
+
+
+## Credits
+
+> Created by [grcpils](https://github.com/grcpils)<br>
+> For [ComputerCraft](https://www.computercraft.info/) Mod
+> <br><br>
+> Add me on Discord : [Pilou™#2187](https://discord.com/)
