@@ -90,4 +90,4 @@ gui.init()
 
 ## Screenshot
 
-![gui_api]()
+![gui_api](https://raw.githubusercontent.com/grcpils/cc-gui_api/master/.github/screenshots/gui_api.png)
