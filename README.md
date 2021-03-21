@@ -1,6 +1,6 @@
 # GUI API for ComputerCraft (OS 1.8)
 
-# NEW DOCUMENTION IS COMING !
+# NEW DOCUMENTATION IS COMING !
 
 Download the api file with this command:
 ```
