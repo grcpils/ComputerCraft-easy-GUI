@@ -5,8 +5,8 @@
 - [ ] Label
 - [x] Groups
 - [x] Buttons
-- [ ] Vertical charts
-- [ ] Horizontal charts
+- [x] Vertical charts
+- [x] Horizontal charts
 
 ## Usage
 
