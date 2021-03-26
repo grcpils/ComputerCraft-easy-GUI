@@ -9,7 +9,7 @@ require("table")
 local Utils    =  require("GUI/utils")
 local Version  =  require("GUI/version")
 local Button   =  require("GUI/button")
-local Group    =  require("GUI/Group")
+local Group    =  require("GUI/group")
 local Progress =  require("GUI/progress")
 
 GUI_MONITOR = nil
