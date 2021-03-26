@@ -1,5 +1,5 @@
 local GUI_API_VERSION = "1.0.0"
-local GUI_API_CDN_URL = "https://cdn.grcpils.fr/cc-files/GUI_API/"
+local GUI_API_CDN_URL = "http://cdn.grcpils.fr/cc-files/GUI_API/"
 local GUI_API_VERSION_FILE = "version.lua"
 local GUI_API_DIRECTORY = "GUI"
 local GUI_API_DIRECTORY_TEMP = "GUI/tmp"
