@@ -2,8 +2,9 @@
 
 ## Features
 - [ ] Monitor title
-- [ ] Label
 - [x] Tiles
+- [ ] Labels
+- [ ] Events
 - [x] Groups
 - [x] Buttons
 - [ ] Vertical charts
