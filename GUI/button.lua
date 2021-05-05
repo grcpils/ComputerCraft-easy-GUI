@@ -50,7 +50,7 @@ end
 
 local new = function(label, callback, pos, size, color)
     local xmin, xmax, ymin, ymax = Utils.getCoordonate(pos, size)
-    local button = {
+    local Button = {
         label = label,
         callback = callback,
         xmin = xmin,
@@ -59,8 +59,39 @@ local new = function(label, callback, pos, size, color)
         ymax = ymax,
         color = color
     }
-    table.insert(GUI_BUTTONS, button)
-    return
+
+    local setLabel = function (label)
+        Button.label = label
+        draw(Button, "idle")
+    end
+
+    local setIdleColor = function (color)
+        Button.color["idle"] = color
+        draw(Button, "idle")
+    end
+
+    local setActiveColor = function (color)
+        Button.color["active"] = color
+        draw(Button, "idle")
+    end
+
+    local setColors = function (colors)
+        Button.color = colors
+        draw(Button, "idle")
+    end
+
+    local setCallback = function (callback)
+        Button.callback = callback
+    end
+
+    table.insert(GUI_BUTTONS, Button)
+    return {
+        setLabel = setLabel,
+        setIdleColor = setIdleColor,
+        setActiveColor = setActiveColor,
+        setColors = setColors,
+        setCallback = setCallback
+    }
 end
 
 return {

@@ -3,9 +3,10 @@
 ## Features
 - [ ] Monitor title
 - [ ] Label
+- [x] Tiles
 - [x] Groups
 - [x] Buttons
-- [x] Vertical charts
+- [ ] Vertical charts
 - [x] Horizontal charts
 
 ## Usage

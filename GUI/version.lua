@@ -1,8 +1,9 @@
 local GUI_API_VERSION = "1.0.0"
-local GUI_API_CDN_URL = "http://cdn.grcpils.fr/cc-files/GUI_API/"
+local GUI_API_CDN_URL = "https://cdn.grcpils.fr/cc-files/GUI_API/"
 local GUI_API_VERSION_FILE = "version.lua"
 local GUI_API_DIRECTORY = "GUI"
 local GUI_API_DIRECTORY_TEMP = "GUI/tmp"
+local Utils    =  require("GUI/utils")
 
 local download = function(url, file)
     local content = http.get(url).readAll()
@@ -23,7 +24,7 @@ local checkUpdate = function ()
     local version = require(GUI_API_DIRECTORY.."/version")
     local nversion = require(GUI_API_DIRECTORY_TEMP.."/version")
     if version.get() ~= nversion.get() then
-        Utils.printWarn("[GUI] New version of GUI is available !")
+        Utils.printWarn("[GUI] New version of GUI is available !\n")
     end
     fs.delete(GUI_API_DIRECTORY_TEMP)
 end
